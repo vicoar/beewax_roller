@@ -1,5 +1,5 @@
 
-h=50; // altura del cilindro
+h=100; // altura del cilindro
 n=20; // el número de celdas en el círculo
 dw=4.9; // distancia entre las caras de la celda
 h1=2; // altura de la protuberancia del panal
@@ -10,6 +10,12 @@ roller_diameter=27; //dimetro de mango
 roller_height=30; //largo de mango
 
 wall_thick = 10; //ancho cilindro medio (desde el diametro mango)
+
+lobes=36; //dientes de engranajes
+loberadius=1; //profundidad dientes
+gear_height=20; //altura de engranajes
+
+////////////////////////////////
 
 ds=(dw-w)/sin(360/6); //cell effective size
 dc=((n*dw)/(2*PI))*2; //cylinder
@@ -47,6 +53,8 @@ module sotc() { //all roll
     
 } // mod sotc
 
+////////////////////////////////
+
 module pivot_joiner(){ //Pivot
     ech=5; //extra cylinder height
 
@@ -65,13 +73,43 @@ module pivot_joiner(){ //Pivot
 } // mod pivot_joiner
 
 
+////////////////////////////////
+
+rawradius=dc/2+dw/2;
+sides=lobes*32;
+
+step=360/sides;
+
+function x(a,b,c) = (rawradius + sin(a*b)*loberadius)* sin(a+5);
+function y(a,b,c) = (rawradius + sin(a*b)*loberadius)* cos(a+5);
+
+pa=[for (a = [0 : step : 360+step])
+	[
+		a == (360+step) ? 0 : x(a,lobes,loberadius),
+ 	    a == (360+step) ? 0 : y(a,lobes,loberadius)
+	] 
+];
+
+module cog(){
+    linear_extrude(height=gear_height,center=true){
+        polygon(points=pa);
+    }
+}
+
+////////////////////////////////
+
 difference(){
     total_height = h + dc*2 + roller_height;
+    pivot_x = h/2 + ds*4;
+    cog_x = total_height/2-1;
+    
     union(){
         sotc();
-        pivot_x = h/2 + ds*4;
         translate([0,0,pivot_x]) pivot_joiner();
         translate([0,0,-pivot_x]) pivot_joiner();
+        
+        translate([0,0,cog_x]) cog();
+        translate([0,0,-cog_x]) cog();
     }
     cylinder(d=roller_diameter-wall_thick,h=total_height,center=true,$fn=12);
 }
