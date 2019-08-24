@@ -1,7 +1,7 @@
 
-h=100; // altura del cilindro
+h=200; // altura del cilindro
 n=20; // el número de celdas en el círculo
-dw=4.9; // distancia entre las caras de la celda
+dw=5.1; // distancia entre las caras de la celda
 h1=2; // altura de la protuberancia del panal
 w=0.5; // espacio entre celdas
 an=30; // ángulo de inclinación de la celda
@@ -99,9 +99,9 @@ module cog(){
 ////////////////////////////////
 
 difference(){
-    total_height = h + dc*2 + roller_height;
-    pivot_x = h/2 + ds*4;
-    cog_x = total_height/2-1;
+    total_height = h + dc*2 + roller_height + gear_height*2;
+    pivot_x = h/2 + ds*4 - 1;
+    cog_x = (h + dc*2 + roller_height)/2-2;
     
     union(){
         sotc();
