@@ -55,13 +55,13 @@ module sotc() { //all roll
 
 ////////////////////////////////
 
-module pivot_joiner(){ //Pivot
-    ech=5; //extra cylinder height
+ech=5; //extra cylinder height
 
+module pivot_joiner(){ //Pivot
     difference(){
         union(){
-            translate([0,0,13]) cylinder(d2=dc,d1=roller_diameter,h=ech,center=true); //botom cyl
-            translate([0,0,-13]) cylinder(d1=dc,d2=roller_diameter,h=ech,center=true); //top cyl
+            translate([0,0,roller_height/2]) cylinder(d2=dc,d1=roller_diameter,h=ech); //botom cyl
+            translate([0,0,-roller_height/2-ech]) cylinder(d1=dc,d2=roller_diameter,h=ech); //top cyl
             cylinder(d=roller_diameter,h=roller_height,center=true,$fn=90); //main cyl
         }
         //cylinder(d=16,h=32,center=true);
@@ -99,9 +99,13 @@ module cog(){
 ////////////////////////////////
 
 difference(){
-    total_height = h + dc*2 + roller_height + gear_height*2;
-    pivot_x = h/2 + ds*4 - 1;
-    cog_x = (h + dc*2 + roller_height)/2-2;
+    main_body_height = h + ds*2;
+    pivot_height = roller_height + ech * 2;
+    
+    pivot_x = (main_body_height + pivot_height) / 2;
+    cog_x = (main_body_height + pivot_height*2 + gear_height) / 2;
+    
+    total_height = main_body_height + pivot_height*2 + gear_height * 2 + 0.1;
     
     union(){
         sotc();
