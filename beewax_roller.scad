@@ -6,7 +6,7 @@ h1=2; // altura de la protuberancia del panal
 w=0.5; // espacio entre celdas
 an=30; // ángulo de inclinación de la celda
 
-roller_diameter=27; //dimetro de mango
+roller_diameter=20; //dimetro de mango
 roller_height=30; //largo de mango
 
 wall_thick = 10; //ancho cilindro medio (desde el diametro mango)
@@ -30,10 +30,10 @@ module st() { //cell
 } // mod st;
 
 
-module sotc() { //all roll
+module sotc() { //roll
     difference() {
         union() {
-            cylinder(h+0.1, dc/2, dc/2, $fn=128, true); //main cyl
+            cylinder(h, dc/2, dc/2, $fn=128, true); //main cyl
 
             for (mz=[0,1]) mirror([0,0,mz])
                 for (hn=[dh:dh*2:h/2+dh])
@@ -47,31 +47,31 @@ module sotc() { //all roll
         for (mz=[0,1]) mirror([0,0,mz])
             translate([0,0,h/2]) cylinder(ds*2, dc/2+h1*2, dc/2+h1*2, $fn=128); //cut off cylinder top and bottom
     } // df
-    
-    for (mz=[0,1]) mirror([0,0,mz])
-            translate([0,0,h/2]) cylinder(ds, dc/2, dc/2, $fn=128); //collar
-    
 } // mod sotc
 
 ////////////////////////////////
 
 ech=5; //extra cylinder height
-
 module pivot_joiner(){ //Pivot
     difference(){
         union(){
             translate([0,0,roller_height/2]) cylinder(d2=dc,d1=roller_diameter,h=ech); //botom cyl
             translate([0,0,-roller_height/2-ech]) cylinder(d1=dc,d2=roller_diameter,h=ech); //top cyl
+
             cylinder(d=roller_diameter,h=roller_height,center=true,$fn=90); //main cyl
         }
-        //cylinder(d=16,h=32,center=true);
- 
-        /*for(t=[30:30:360]){
-            rotate([0,0,t]) translate([8+2.5,0,0]) #cylinder(d=2.5,h=roller_height+ech,center=true,$fn=12);    
-        }*/
     }
 } // mod pivot_joiner
 
+module pivot_with_cog(s){
+    pivot_x = gear_height/2+roller_height/2+ech;
+    cubh = s-0.1; //cube height
+    union(){
+        cog();
+        translate([0,0,pivot_x]) pivot_joiner();
+        translate([0,0,gear_height+roller_height+cubh/2]) cube(size=cubh, center=true);
+    }
+}
 
 ////////////////////////////////
 
@@ -97,23 +97,16 @@ module cog(){
 }
 
 ////////////////////////////////
+inner_tube_diameter = roller_diameter-wall_thick;
 
-difference(){
-    main_body_height = h + ds*2;
-    pivot_height = roller_height + ech * 2;
-    
-    pivot_x = (main_body_height + pivot_height) / 2;
-    cog_x = (main_body_height + pivot_height*2 + gear_height) / 2;
-    
-    total_height = main_body_height + pivot_height*2 + gear_height * 2 + 0.1;
-    
-    union(){
+module roller(){
+    difference(){
         sotc();
-        translate([0,0,pivot_x]) pivot_joiner();
-        translate([0,0,-pivot_x]) pivot_joiner();
-        
-        translate([0,0,cog_x]) cog();
-        translate([0,0,-cog_x]) cog();
+        cube([inner_tube_diameter,inner_tube_diameter,h+0.1], center=true);
     }
-    cylinder(d=roller_diameter-wall_thick,h=total_height,center=true,$fn=12);
 }
+
+roller();
+
+translate([dc+10,0,0]) pivot_with_cog(inner_tube_diameter);
+translate([-dc-10,0,0]) pivot_with_cog(inner_tube_diameter);
